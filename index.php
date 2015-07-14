@@ -39,9 +39,9 @@ ob_start();
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <title>ITDCMS Check v<?php echo $version?></title>
         <meta name="author" content="itdc.ge" />
-        <script src="static/js/jquery-2.1.4.min.js"></script>
-        <script src="static/js/bootstrap.min.js"></script>
-        <link rel="stylesheet" href="static/css/bootstrap.min.css">
+        <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     </head>
 
     <body class="clearfix">
