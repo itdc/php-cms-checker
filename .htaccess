@@ -4,7 +4,6 @@ DirectoryIndex index.php
     Deny from all
     Satisfy all
 </Files>
-
 <IfModule mod_rewrite.c>
     RewriteEngine on
 
