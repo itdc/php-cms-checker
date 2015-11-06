@@ -1,11 +1,20 @@
 <?php
+/*
+ * This file is part of the ITDCMS package.
+ *
+ * (c) JSC ITDC
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+*/
+
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 header("Cache-Control: no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.0.0';
+$version = '2.0.1';
 /**
  * @package             ITDCMS
  * @subpackage          Utilities
@@ -761,7 +770,20 @@ abstract class Checker
         if (empty($return)) {
             $return = array();
             $return['title'] = 'Connection to service.itdc.ge';
-            $data = file_get_contents('https://service.itdc.ge');
+            if (function_exists('curl_version')) {
+                $url = file_get_contents('https://service.itdc.ge');
+                $curl_handle = curl_init();
+                curl_setopt($curl_handle, CURLOPT_URL, $url);
+                curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+                curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($curl_handle, CURLOPT_USERAGENT,
+                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36');
+                $data = curl_exec($curl_handle);
+                curl_close($curl_handle);
+            } else {
+                $data = false;
+            }
+
             if ($data) {
                 $return['comment'] = 'Allowed';
                 $return['status'] = true;
@@ -935,11 +957,12 @@ abstract class Checker
             foreach($urls as $url) {
 
                 if (function_exists('curl_version')) {
-                    $curl_handle=curl_init();
+                    $curl_handle = curl_init();
                     curl_setopt($curl_handle, CURLOPT_URL, $url);
                     curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
                     curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-                    curl_setopt($curl_handle, CURLOPT_USERAGENT, 'ITDC');
+                    curl_setopt($curl_handle, CURLOPT_USERAGENT,
+                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36');
                     $data = curl_exec($curl_handle);
                     curl_close($curl_handle);
                 } else {
