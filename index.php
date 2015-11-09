@@ -14,7 +14,7 @@ header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.1.2';
+$version = '2.1.3';
 $debug_mode = (int)is_debug_mode();
 /**
  * @package             ITDCMS
@@ -22,7 +22,7 @@ $debug_mode = (int)is_debug_mode();
  * @author              Avtandil Kikabidze aka LONGMAN (akalongman@gmail.com)
  * @copyright           Copyright (C) 2001 - 2015 ITDC, JSC. All rights reserved.
  * @license             Commercial license
- * @version             2.1.2
+ * @version             2.1.3
  */
 
 ini_set('error_reporting', E_ALL);
@@ -43,10 +43,12 @@ switch($mode) {
 
     case 'version':
         echo $version;
+        die;
         break;
 
     case 'mr':
         echo '{{MODREWRITEWORKS}}';
+        die;
         break;
 
     case 'phpinfo':
@@ -179,7 +181,7 @@ ob_start();
                                 <?php
                             } else {
                                 ?>
-                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" role="button" class="btn btn-primary btn-md pull-right">
+                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" target="_blank" role="button" class="btn btn-primary btn-md pull-right">
                                     phpinfo()
                                 </a>
                                 <?php
@@ -843,7 +845,21 @@ abstract class Checker
             } elseif (file_exists('.htaccess')) {
                 ini_set('default_socket_timeout', 15);
                 $scheme = isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : 'http';
-                $md = @file_get_contents($scheme.'://'.$_SERVER['HTTP_HOST'].'/check/checkmodrewriteitdc.php');
+                $url = $scheme.'://'.$_SERVER['HTTP_HOST'].'/check/checkmodrewriteitdc.php';
+
+                if (function_exists('curl_version')) {
+                    $curl_handle = curl_init();
+                    curl_setopt($curl_handle, CURLOPT_URL, $url);
+                    curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+                    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($curl_handle, CURLOPT_USERAGENT,
+                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36');
+                    $md = curl_exec($curl_handle);
+                    curl_close($curl_handle);
+                } else {
+                    $md = file_get_contents($url);
+                }
+
                 if (!empty($md) && strpos($md, '{{MODREWRITEWORKS}}') !== false) {
                     $return['comment'] = 'Installed';
                     $return['status'] = true;
