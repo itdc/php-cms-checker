@@ -14,7 +14,7 @@ header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.1.3';
+$version = '2.2.0';
 $debug_mode = (int)is_debug_mode();
 /**
  * @package             ITDCMS
@@ -22,7 +22,7 @@ $debug_mode = (int)is_debug_mode();
  * @author              Avtandil Kikabidze aka LONGMAN (akalongman@gmail.com)
  * @copyright           Copyright (C) 2001 - 2015 ITDC, JSC. All rights reserved.
  * @license             Commercial license
- * @version             2.1.3
+ * @version             2.2.0
  */
 
 ini_set('error_reporting', E_ALL);
@@ -47,7 +47,14 @@ switch($mode) {
         break;
 
     case 'mr':
-        echo '{{MODREWRITEWORKS}}';
+        echo 'mod_rewrite|1|Installed|Mod Rewrite installed';
+        die;
+        break;
+
+
+
+    case 'error':
+        echo 'error|0|Unknown|Server Error';
         die;
         break;
 
@@ -181,7 +188,7 @@ ob_start();
                                 <?php
                             } else {
                                 ?>
-                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" target="_blank" role="button" class="btn btn-primary btn-md pull-right">
+                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" role="button" class="btn btn-primary btn-md pull-right">
                                     phpinfo()
                                 </a>
                                 <?php
@@ -325,20 +332,28 @@ ob_start();
             </div>
         </div>
 
-
+        <?php
+        $scheme = isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : 'http';
+        $url = $scheme.'://'.$_SERVER['HTTP_HOST'].'/check/checkmodrewriteitdc.php';
+        ?>
 
 
 
         <script>
-             entry = '<?php echo $_SERVER["PHP_SELF"]?>';
-             debug_mode = <?php echo $debug_mode?>;
+            entry = '<?php echo $_SERVER["PHP_SELF"]?>';
+            m_url = '<?php echo $url?>';
+            debug_mode = <?php echo $debug_mode?>;
 
 
             function startCheck(list, level) {
                 var prefix = level == 1 ? 'required_' : 'recommended_';
 
                 $.each(list, function(index, value) {
-                    var url = entry+'?mode=check&type='+value+'&level='+level;
+                    if (value == 'mod_rewrite') {
+                        var url = m_url;
+                    } else {
+                        var url = entry+'?mode=check&type='+value+'&level='+level;
+                    }
 
                     $.ajax({
                         type: 'GET',
@@ -354,11 +369,14 @@ ob_start();
                             var id = data_arr[0];
                             var status = data_arr[1];
                             var comment = data_arr[2];
+                            if (comment == undefined) {
+                                comment = 'Error';
+                            }
                             var msg = data_arr[3];
 
                             $('#'+prefix+'tr_'+value+' td.current').text(comment);
 
-                            if (status) {
+                            if (status == 1) {
                                 $('#'+prefix+'tr_'+value+' td.current').removeClass('text-danger');
                                 $('#'+prefix+'tr_'+value+' td.status span.success').show();
                             } else {
@@ -368,9 +386,10 @@ ob_start();
                             }
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
-                            //var error = textStatus+' '+errorThrown;
                             $('#'+prefix+'tr_'+value+' td.status span.error').show();
                             $('#'+prefix+'tr_'+value+' td.status span.error').prop('title', textStatus);
+                            $('#'+prefix+'tr_'+value+' td.current').addClass('text-danger').text('Unknown');
+
                         },
                         complete: function(jqXHR, textStatus) {
                             $('#'+prefix+'tr_'+value+' td.status span.preloader').hide();
@@ -488,6 +507,7 @@ abstract class Checker
             'title'=>'Mod Rewrite Extension',
             'method'=>'checkModRewrite',
             'required'=>'Installed',
+            'type'=>'js',
         ),
         'mbstring'=>array(
             'id'=>'check_mbstring',
@@ -857,7 +877,7 @@ abstract class Checker
                     $md = curl_exec($curl_handle);
                     curl_close($curl_handle);
                 } else {
-                    $md = file_get_contents($url);
+                    $md = @file_get_contents($url);
                 }
 
                 if (!empty($md) && strpos($md, '{{MODREWRITEWORKS}}') !== false) {
