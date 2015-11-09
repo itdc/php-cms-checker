@@ -14,7 +14,7 @@ header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.2.1';
+$version = '2.2.2';
 $debug_mode = (int)is_debug_mode();
 /**
  * @package             ITDCMS
@@ -22,7 +22,7 @@ $debug_mode = (int)is_debug_mode();
  * @author              Avtandil Kikabidze aka LONGMAN (akalongman@gmail.com)
  * @copyright           Copyright (C) 2001 - 2015 ITDC, JSC. All rights reserved.
  * @license             Commercial license
- * @version             2.2.1
+ * @version             2.2.2
  */
 
 ini_set('error_reporting', E_ALL);
@@ -155,7 +155,7 @@ ob_start();
     <body class="clearfix">
 
         <div class="row">
-            <div class="col-xs-6 col-xs-offset-3">
+            <div class="col-md-6 col-md-offset-3 col-xs-12">
             <?php
 
                 $disabled_functions = @ini_get('disable_functions');
@@ -206,119 +206,119 @@ ob_start();
                     <div class="panel-body">
 
                         <!-- Required -->
-                        <table class="table table-hover table-bordered">
-                            <thead>
-                                <tr>
-                                    <th colspan="3"><h3>Minimum Requirements</h3></th>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <b>Requirement</b>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Current</b>
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Required</b>
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Status</b>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="table_required">
-                                <?php
-                                $tokens = Checker::getTokens(1);
-                                $js_tokens = array();
-                                foreach($tokens as $key=>$token) {
-                                    ?>
-                                    <tr id="required_tr_<?php echo $key ?>">
-                                        <td class="title"><?php echo $token['title'] ?></td>
-
-                                        <td class="current" style="text-align:center;"></td>
-
-                                        <td class="required" style="text-align:center;"><?php echo $token['required'] ?></td>
-
-                                        <td class="status" style="text-align:center;">
-                                            <span class="preloader" title="Loading"></span>
-                                            <span style="color:green;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-ok success"></span>
-                                            <span style="color:red;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-remove error"></span>
-                                        </td>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="3"><h3>Minimum Requirements</h3></th>
                                     </tr>
+                                    <tr>
+                                        <th>
+                                            <b>Requirement</b>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Current</b>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Required</b>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Status</b>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table_required">
                                     <?php
-                                    $js_tokens[] = $key;
-                                }
-                                $js_tokens = '["'.implode('","', $js_tokens).'"]';
-                                ?>
-                            </tbody>
-                        </table>
+                                    $tokens = Checker::getTokens(1);
+                                    $js_tokens = array();
+                                    foreach($tokens as $key=>$token) {
+                                        ?>
+                                        <tr id="required_tr_<?php echo $key ?>">
+                                            <td class="title"><?php echo $token['title'] ?></td>
+
+                                            <td class="current" style="text-align:center;"></td>
+
+                                            <td class="required" style="text-align:center;"><?php echo $token['required'] ?></td>
+
+                                            <td class="status" style="text-align:center;">
+                                                <span class="preloader" title="Loading"></span>
+                                                <span style="color:green;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-ok success"></span>
+                                                <span style="color:red;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-remove error"></span>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                        $js_tokens[] = $key;
+                                    }
+                                    $js_tokens = '["'.implode('","', $js_tokens).'"]';
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
 
                         <hr />
                         <hr />
-
 
                         <!-- Recommended -->
-                        <table class="table table-hover table-bordered">
-                            <thead>
-                                <tr>
-                                    <th colspan="3"><h3>Recommended Requirements</h3></th>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <b>Requirement</b>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Current</b>
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Recommended</b>
-                                        </div>
-                                    </th>
-                                    <th>
-                                        <div style="text-align:center;">
-                                            <b>Status</b>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="table_recommended">
-                                <?php
-                                $tokens = Checker::getTokens(2);
-                                $js_tokens2 = array();
-                                foreach($tokens as $key=>$token) {
-                                    ?>
-                                    <tr id="recommended_tr_<?php echo $key ?>">
-                                        <td class="title"><?php echo $token['title'] ?></td>
-
-                                        <td class="current" style="text-align:center;"></td>
-
-                                        <td class="required" style="text-align:center;"><?php echo $token['required'] ?></td>
-
-                                        <td class="status" style="text-align:center;">
-                                            <span class="preloader" title="Loading"></span>
-                                            <span style="color:green;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-ok success"></span>
-                                            <span style="color:red;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-remove error"></span>
-                                        </td>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th colspan="3"><h3>Recommended Requirements</h3></th>
                                     </tr>
+                                    <tr>
+                                        <th>
+                                            <b>Requirement</b>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Current</b>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Recommended</b>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            <div style="text-align:center;">
+                                                <b>Status</b>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table_recommended">
                                     <?php
-                                    $js_tokens2[] = $key;
-                                }
-                                $js_tokens2 = '["'.implode('","', $js_tokens2).'"]';
-                                ?>
-                            </tbody>
-                        </table>
+                                    $tokens = Checker::getTokens(2);
+                                    $js_tokens2 = array();
+                                    foreach($tokens as $key=>$token) {
+                                        ?>
+                                        <tr id="recommended_tr_<?php echo $key ?>">
+                                            <td class="title"><?php echo $token['title'] ?></td>
 
+                                            <td class="current" style="text-align:center;"></td>
 
+                                            <td class="required" style="text-align:center;"><?php echo $token['required'] ?></td>
 
+                                            <td class="status" style="text-align:center;">
+                                                <span class="preloader" title="Loading"></span>
+                                                <span style="color:green;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-ok success"></span>
+                                                <span style="color:red;font-size:16px;font-weight:bold;display:none;" class="glyphicon glyphicon glyphicon-remove error"></span>
+                                            </td>
+                                        </tr>
+                                        <?php
+                                        $js_tokens2[] = $key;
+                                    }
+                                    $js_tokens2 = '["'.implode('","', $js_tokens2).'"]';
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
 
                     </div>
                 </div>
