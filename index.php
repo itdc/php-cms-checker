@@ -14,7 +14,7 @@ header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.2.0';
+$version = '2.2.1';
 $debug_mode = (int)is_debug_mode();
 /**
  * @package             ITDCMS
@@ -22,7 +22,7 @@ $debug_mode = (int)is_debug_mode();
  * @author              Avtandil Kikabidze aka LONGMAN (akalongman@gmail.com)
  * @copyright           Copyright (C) 2001 - 2015 ITDC, JSC. All rights reserved.
  * @license             Commercial license
- * @version             2.2.0
+ * @version             2.2.1
  */
 
 ini_set('error_reporting', E_ALL);
@@ -188,7 +188,7 @@ ob_start();
                                 <?php
                             } else {
                                 ?>
-                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" role="button" class="btn btn-primary btn-md pull-right">
+                                <a title="phpinfo()" href="<?php echo $_SERVER['PHP_SELF'].'?mode=phpinfo' ?>" target="_blank" role="button" class="btn btn-primary btn-md pull-right">
                                     phpinfo()
                                 </a>
                                 <?php
