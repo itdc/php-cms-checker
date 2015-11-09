@@ -14,14 +14,15 @@ header("Pragma: no-cache");
 header("Last-Modified: ".gmdate("D, d M Y H:i:s")."GMT");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-$version = '2.0.1';
+$version = '2.1.0';
+$debug_mode = (int)is_debug_mode();
 /**
  * @package             ITDCMS
  * @subpackage          Utilities
  * @author              Avtandil Kikabidze aka LONGMAN (akalongman@gmail.com)
  * @copyright           Copyright (C) 2001 - 2015 ITDC, JSC. All rights reserved.
  * @license             Commercial license
- * @version             2.0.0
+ * @version             2.1.0
  */
 
 ini_set('error_reporting', E_ALL);
@@ -53,6 +54,69 @@ switch($mode) {
         die;
         break;
 
+    case 'checkupdate':
+        $return = array();
+        $return['status'] = 'error';
+        $return['msg'] = 'Something went wrong';
+        $return['link'] = '';
+        $return['version'] = '';
+
+        if (!function_exists('curl_version')) {
+            $return['msg'] = 'CURL Extension not installed!';
+            die(json_encode($return));
+        }
+
+
+        $url = 'https://api.github.com/repos/itdc/php-cms-checker/tags';
+
+        $curl_handle = curl_init();
+        curl_setopt($curl_handle, CURLOPT_URL, $url);
+        curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_handle, CURLOPT_USERAGENT,
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.80 Safari/537.36');
+        $data = curl_exec($curl_handle);
+        $error = curl_error($curl_handle);
+        curl_close($curl_handle);
+
+        if (!$data) {
+            $return['msg'] = 'CURL error: '.$error;
+            die(json_encode($return));
+        }
+
+
+        $json = json_decode($data, true);
+        if (empty($json)) {
+            $return['msg'] = 'Data is invalid';
+            die(json_encode($return));
+        }
+
+
+
+        if (empty($json[0])) {
+            $return['msg'] = 'Data is empty';
+            die(json_encode($return));
+        }
+        $data = $json[0];
+
+        $tag_name = $data['name'];
+
+        if (version_compare($version, $tag_name) === -1) {
+            // update available
+            $return['status'] = 'yes';
+            $return['msg'] = 'New version '.$tag_name.' available';
+            $return['link'] = $data['zipball_url'];
+            $return['version'] = $tag_name;
+            die(json_encode($return));
+        } else {
+            // no updates
+            $return['status'] = 'no';
+            $return['msg'] = 'No updates';
+            $return['link'] = $data['zipball_url'];
+            $return['version'] = $tag_name;
+            die(json_encode($return));
+        }
+        break;
 }
 
 
@@ -105,7 +169,7 @@ ob_start();
                         </h5>
 
                         <h3 class="clearfix">
-                            CMS Compatibility Checker <small>v<?php echo $version?></small>
+                            CMS Compatibility Checker <span id="ver-badge" class="small badge" style="background-color:#888888;">v<?php echo $version?></span>
                             <?php
                             if (!empty($disabled_functions) && in_array('phpinfo', $disabled_functions)) {
                                 ?>
@@ -122,6 +186,8 @@ ob_start();
                             }
                             ?>
                         </h3>
+                        <h5 id="update" style="display:none;">Update available <a href="asdada">asdsadsadada</a></h5>
+
 
 
                     </div>
@@ -261,82 +327,115 @@ ob_start();
 
 
 
-<script>
-    function startCheck(list, level) {
-        var entry = '<?php echo $_SERVER["PHP_SELF"]?>';
-        var prefix = level == 1 ? 'required_' : 'recommended_';
+        <script>
+             entry = '<?php echo $_SERVER["PHP_SELF"]?>';
+             debug_mode = <?php echo $debug_mode?>;
 
-        $.each(list, function(index, value) {
-            var url = entry+'?mode=check&type='+value+'&level='+level;
 
-            $.ajax({
-                type: 'GET',
-                url: url,
-                cache: false,
-                timeout: 60000,
-                data: null,
-                beforeSend: function(jqXHR, settings){
+            function startCheck(list, level) {
+                var prefix = level == 1 ? 'required_' : 'recommended_';
 
-                },
-                success: function(data, textStatus, jqXHR) {
-                    var data_arr = data.split("|");
-                    var id = data_arr[0];
-                    var status = data_arr[1];
-                    var comment = data_arr[2];
-                    var msg = data_arr[3];
+                $.each(list, function(index, value) {
+                    var url = entry+'?mode=check&type='+value+'&level='+level;
 
-                    $('#'+prefix+'tr_'+value+' td.current').text(comment);
+                    $.ajax({
+                        type: 'GET',
+                        url: url,
+                        cache: false,
+                        timeout: 60000,
+                        data: null,
+                        beforeSend: function(jqXHR, settings){
 
-                    if (status) {
-                        $('#'+prefix+'tr_'+value+' td.current').removeClass('text-danger');
-                        $('#'+prefix+'tr_'+value+' td.status span.success').show();
-                    } else {
-                        $('#'+prefix+'tr_'+value+' td.current').addClass('text-danger');
-                        $('#'+prefix+'tr_'+value+' td.status span.error').show();
-                        $('#'+prefix+'tr_'+value+' td.status span.error').prop('title', msg);
+                        },
+                        success: function(data, textStatus, jqXHR) {
+                            var data_arr = data.split("|");
+                            var id = data_arr[0];
+                            var status = data_arr[1];
+                            var comment = data_arr[2];
+                            var msg = data_arr[3];
+
+                            $('#'+prefix+'tr_'+value+' td.current').text(comment);
+
+                            if (status) {
+                                $('#'+prefix+'tr_'+value+' td.current').removeClass('text-danger');
+                                $('#'+prefix+'tr_'+value+' td.status span.success').show();
+                            } else {
+                                $('#'+prefix+'tr_'+value+' td.current').addClass('text-danger');
+                                $('#'+prefix+'tr_'+value+' td.status span.error').show();
+                                $('#'+prefix+'tr_'+value+' td.status span.error').prop('title', msg);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            //var error = textStatus+' '+errorThrown;
+                            $('#'+prefix+'tr_'+value+' td.status span.error').show();
+                            $('#'+prefix+'tr_'+value+' td.status span.error').prop('title', textStatus);
+                        },
+                        complete: function(jqXHR, textStatus) {
+                            $('#'+prefix+'tr_'+value+' td.status span.preloader').hide();
+
+                        }
+                    });
+                });
+            }
+
+
+            function checkUpdate() {
+                var url = entry+'?mode=checkupdate';
+
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    cache: false,
+                    timeout: 60000,
+                    data: null,
+                    dataType: 'json',
+                    beforeSend: function(jqXHR, settings){
+
+                    },
+                    success: function(data, textStatus, jqXHR) {
+                        var $status = data.status;
+                        var $version = data.version;
+                        var $link = data.link;
+
+                        if ($status == 'yes') {
+                            var html = 'New version of checker <span id="ver-badge2" class="small badge" style="background-color:#44a944;">v' + $version + '</span> is available! \
+                            Download from <a href="'+$link+'" target="_blank">here</a> and update manually';
+                            $('#update').html(html).show();
+                            $('#ver-badge').css('background-color', '#a94442');
+                        } else if ($status == 'error') {
+                            console.log(data);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(textStatus);
+                    },
+                    complete: function(jqXHR, textStatus) {
+
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    //var error = textStatus+' '+errorThrown;
-                    $('#'+prefix+'tr_'+value+' td.status span.error').show();
-                    $('#'+prefix+'tr_'+value+' td.status span.error').prop('title', textStatus);
-                },
-                complete: function(jqXHR, textStatus) {
-                    $('#'+prefix+'tr_'+value+' td.status span.preloader').hide();
+                });
+            }
 
+
+
+
+            $(function() {
+                if (debug_mode) {
+                    checkUpdate();
                 }
+
+                list = <?php echo $js_tokens?>;
+                // required
+                startCheck(list, 1);
+
+                list = <?php echo $js_tokens2?>;
+                // recommended
+                startCheck(list, 2);
+
+
             });
-        });
-    }
-
-    $(function() {
-
-        list = <?php echo $js_tokens?>;
-        // required
-        startCheck(list, 1);
-
-        list = <?php echo $js_tokens2?>;
-        // recommended
-        startCheck(list, 2);
-
-
-    });
-</script>
-
-
-
-
-
-
-
-
+        </script>
     </body>
-
-</html>
-
-
-
-<?php
+</html><?php
 ob_get_flush();
 
 
@@ -771,7 +870,7 @@ abstract class Checker
             $return = array();
             $return['title'] = 'Connection to service.itdc.ge';
             if (function_exists('curl_version')) {
-                $url = file_get_contents('https://service.itdc.ge');
+                $url = 'https://service.itdc.ge/api';
                 $curl_handle = curl_init();
                 curl_setopt($curl_handle, CURLOPT_URL, $url);
                 curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 2);
@@ -1008,4 +1107,31 @@ abstract class Checker
 
 
 }
+function ip_in_network($ip, $net_addr, $net_mask){
+    if ($net_mask <= 0) {
+        return false;
+    }
+    $ip_binary_string = sprintf("%032b",ip2long($ip));
+    $net_binary_string = sprintf("%032b",ip2long($net_addr));
+    return (substr_compare($ip_binary_string,$net_binary_string,0,$net_mask) === 0);
+}
 
+
+
+function is_debug_mode() {
+    $client_ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+    $is_remote = filter_var(
+                $client_ip,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+            );
+
+    if (!$is_remote) {
+        return true;
+    }
+    $arr = array('92.241.86.122', '95.104.105.5');
+    if (in_array($client_ip, $arr)) {
+        return true;
+    }
+    return false;
+}
