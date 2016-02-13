@@ -4,17 +4,15 @@ DirectoryIndex index.php
     Deny from all
     Satisfy all
 </Files>
-
 <IfModule mod_rewrite.c>
     RewriteEngine on
 
-    # Send request via index.php (again, not if its a real file or folder)
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-
-    RewriteCond $1 !^(index.php)
-    RewriteRule ^(.*)$ index.php/$1 [L]
-
     # line for check
     RewriteRule checkmodrewriteitdc.php index.php?mode=mr [NC]
+
+    # Emulation of ErrorDocument 404
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule .* index.php?mode=error [L]
+
 </IfModule>
